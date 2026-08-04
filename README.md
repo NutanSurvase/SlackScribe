@@ -13,8 +13,12 @@ Runs entirely on your own Mac. No API key, no subscription, no internet call —
 ## Quick install
 
 ```
-curl -fsSL https://raw.githubusercontent.com/NutanSurvase/SlackScribe/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/NutanSurvase/SlackScribe/main/install.sh -o /tmp/slackscribe-install.sh && bash /tmp/slackscribe-install.sh
 ```
+
+(Downloads the script first, then runs it — safer than piping straight into
+`bash`, since some of the install steps can otherwise interfere with the
+same connection the script is being read from mid-run.)
 
 This runs every step below automatically, except granting the Accessibility
 permission — macOS requires that to be a manual click. Prefer to see what
