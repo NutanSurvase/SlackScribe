@@ -3,6 +3,13 @@ set -e
 
 REPO_RAW_BASE="https://raw.githubusercontent.com/NutanSurvase/SlackScribe/main"
 
+# Skips Homebrew's own auto-update step. On a machine that hasn't updated
+# Homebrew in a while, that auto-update can trigger a dependency-upgrade
+# confirmation prompt mid-install — this installer doesn't need the latest
+# formula index, just for ollama/hammerspoon to install cleanly.
+export HOMEBREW_NO_AUTO_UPDATE=1
+export NONINTERACTIVE=1
+
 echo "== SlackScribe installer =="
 
 if ! command -v brew >/dev/null 2>&1; then
