@@ -40,10 +40,12 @@ open -a Hammerspoon
 cat <<'EOF'
 
 == One manual step left ==
-macOS will prompt (or go to System Settings -> Privacy & Security -> Accessibility)
-to grant Hammerspoon permission. This lets it simulate copy/paste for you --
-that's all it's used for. Turn it on, then click the Hammerspoon menu bar icon
--> Reload Config.
+Hammerspoon should show its own Preferences window with an "Enable Accessibility"
+button -- click that (or go to System Settings -> Privacy & Security ->
+Accessibility and turn it on there). This lets it simulate copy/paste for you --
+that's all it's used for. Then click the Hammerspoon menu bar icon -> Reload
+Config. To confirm it worked, menu bar icon -> Console should show a line for
+each of the 7 hotkeys.
 
 You're set. Hotkeys: ⌘⇧R ⌘⇧G ⌘⇧D ⌘⇧↑ ⌘⇧↓ ⌘⇧S ⌘⇧X (see README for what each does).
 EOF

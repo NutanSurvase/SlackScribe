@@ -44,7 +44,9 @@ brew install --cask hammerspoon
 ```
 
 **4. Grant Accessibility permission**
-Open Hammerspoon once (`open -a Hammerspoon`), then go to **System Settings → Privacy & Security → Accessibility**, and turn on Hammerspoon. This lets it simulate copy/paste on your behalf — that's all it uses this for.
+The first time Hammerspoon launches, it typically opens its own **Preferences** window showing "WARNING! Accessibility is not enabled!" with an **Enable Accessibility** button — click that (it's the quickest path). Alternatively, go to **System Settings → Privacy & Security → Accessibility** and turn on Hammerspoon there directly. Either way, this only lets it simulate copy/paste on your behalf — that's all it's used for.
+
+You'll also see a one-time system notification like *"Login Item Added — Hammerspoon will open automatically when you log in"* — that's expected, not an error.
 
 **5. Get the config file and add it**
 ```
@@ -55,6 +57,15 @@ cp SlackScribe/slackscribe.lua ~/.hammerspoon/init.lua
 
 **6. Load it**
 Click the Hammerspoon icon in your menu bar → **Reload Config**. You should see a confirmation popup listing the hotkeys.
+
+To double-check it actually loaded (in case you miss the popup), click the Hammerspoon menu bar icon → **Console**. You should see a line for each hotkey, like:
+```
+hotkey: Enabled hotkey ⌘⇧R
+hotkey: Enabled hotkey ⌘⇧G
+hotkey: Enabled hotkey ⌘⇧D
+...
+```
+Seven lines total — one per hotkey — confirms everything's registered correctly.
 
 **7. (Optional) Auto-start at login**
 Add Hammerspoon as a login item: **System Settings → General → Login Items → +** → select Hammerspoon.
