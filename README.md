@@ -84,10 +84,27 @@ Works anywhere you can select text, including Slack Desktop:
 | `⌘⇧S` | Summarize several selected messages — main points, decisions, open questions, action items |
 | `⌘⇧X` | Clear captured context manually |
 
+## Troubleshooting
+
+**The install command stops partway through, or seems stuck:**
+- If it prints a specific `Error: ...` message, that tells you exactly what failed (no internet, Homebrew itself failed, etc.) — fix that and re-run the same command; it's safe to run more than once.
+- If it's just slow with no error, let it keep running — Homebrew can take a while on a Mac that hasn't been updated in a long time. Don't interrupt it.
+
+**No Hammerspoon window or menu bar icon appears after installing:**
+- Launch it yourself: **Cmd+Space** → type "Hammerspoon" → Enter.
+- Check it's actually installed: run `brew list --cask hammerspoon` in Terminal — if it says "not installed," re-run the install command above.
+
+**Text rewrites correctly, but no "Rephrased ✓" popup appears:**
+- Check whether Slack is in native full-screen mode (its own dedicated desktop Space) — exit full-screen and try again. Hammerspoon's popups don't reliably show over apps running that way.
+
+**A hotkey says "select some text first" right after it should've worked:**
+- Just try again — it's usually a one-off timing hiccup with the app you're in.
+
+**A hotkey consistently fails to capture even with text clearly selected:**
+- Another app may have claimed the same global shortcut (screenshot/recording tools are common culprits). Check for a conflicting hotkey in that app, or rebind the one in `init.lua` to a different combo.
+
 ## Notes
 
 - Everything runs on `localhost` — nothing you type is sent over the internet.
 - The model (`qwen2.5:7b-instruct`) can be swapped for a smaller/faster or larger/better one by changing `OLLAMA_MODEL` at the top of `init.lua`, as long as it's pulled via `ollama pull <model>` first.
 - By default the hotkeys only fire while Slack is the frontmost app — in any other app, the same keystroke passes through untouched (so a browser's own `⌘⇧R` refresh still works, for example). Flip `SLACK_ONLY` to `false` near the top of `init.lua` to make them global instead.
-- If a hotkey ever says "select some text first" right after it should've worked, just try again — it's usually a timing hiccup with the app you're in.
-- If a hotkey consistently fails to capture even with text clearly selected, another app may have claimed the same global shortcut (screenshot/recording tools are common culprits). Check for a conflicting hotkey in that app, or rebind the one in `init.lua` to a different combo.
