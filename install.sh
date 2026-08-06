@@ -50,7 +50,7 @@ if [ ! -d "/Applications/Hammerspoon.app" ]; then
 fi
 
 echo "-- Installing the SlackScribe config"
-mkdir -p ~/.hammerspoon
+mkdir -p ~/.hammerspoon || true
 if ! curl -fsSL "$REPO_RAW_BASE/slackscribe.lua" -o ~/.hammerspoon/init.lua; then
   echo "Error: couldn't download the config file (check your internet connection), then re-run this script."
   exit 1
@@ -60,11 +60,20 @@ echo "-- Adding Hammerspoon as a login item (so hotkeys are always ready)"
 osascript -e 'tell application "System Events" to make login item at end with properties {path:"/Applications/Hammerspoon.app", hidden:false}' >/dev/null 2>&1 || true
 
 echo "-- Launching Hammerspoon"
-open -a Hammerspoon
+# By this point every essential prerequisite (ollama, the model, the
+# Hammerspoon app, the config) is already confirmed to genuinely exist.
+# Auto-launching it is a convenience, not a requirement -- if this
+# particular hiccups (e.g. a first-launch Gatekeeper check), the person
+# can still launch it themselves per the instructions below, so this must
+# never be allowed to block the final success message from printing.
+open -a Hammerspoon || true
 
 cat <<'EOF'
 
 == One manual step left ==
+If you don't see a Hammerspoon window or menu bar icon, launch it yourself:
+Cmd+Space -> type "Hammerspoon" -> Enter.
+
 Hammerspoon should show its own Preferences window with an "Enable Accessibility"
 button -- click that (or go to System Settings -> Privacy & Security ->
 Accessibility and turn it on there). This lets it simulate copy/paste for you --
