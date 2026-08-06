@@ -36,6 +36,26 @@ if ! command -v ollama >/dev/null 2>&1; then
 fi
 brew services start ollama || true
 
+# `brew services start` hands off to launchd and returns immediately -- the
+# actual ollama server process needs a moment to start listening. On a truly
+# fresh install (service started for the first time), pulling the model
+# right away can lose that race with a "could not connect" error. Wait for
+# the server to actually respond before trying, instead of assuming it's
+# ready the instant the service command returns.
+echo "-- Waiting for the Ollama server to be ready"
+ready=0
+for i in $(seq 1 15); do
+  if curl -fsS http://127.0.0.1:11434 >/dev/null 2>&1; then
+    ready=1
+    break
+  fi
+  sleep 1
+done
+if [ "$ready" -ne 1 ]; then
+  echo "Error: the Ollama server never came up. Try running 'ollama serve' in another terminal window, then re-run this script."
+  exit 1
+fi
+
 echo "-- Downloading the model (qwen2.5:7b-instruct, ~4.7GB, one-time)"
 if ! ollama pull qwen2.5:7b-instruct; then
   echo "Error: the model download failed (check your internet connection), then re-run this script."
