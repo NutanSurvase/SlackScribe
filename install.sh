@@ -9,6 +9,12 @@ REPO_RAW_BASE="https://raw.githubusercontent.com/NutanSurvase/SlackScribe/main"
 # formula index, just for ollama/hammerspoon to install cleanly.
 export HOMEBREW_NO_AUTO_UPDATE=1
 export NONINTERACTIVE=1
+# Skips Homebrew's routine 30-day cache cleanup, which sometimes returns a
+# non-zero exit code on its own (e.g. a permission hiccup deleting an old
+# log) even when the actual install succeeded -- with `set -e` that was
+# silently aborting the rest of this script right after ollama installed.
+# This installer has no need for that unrelated maintenance step to run.
+export HOMEBREW_NO_INSTALL_CLEANUP=1
 
 echo "== SlackScribe installer =="
 
