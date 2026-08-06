@@ -307,6 +307,10 @@ local function rephraseText(input, callback)
     system = systemPrompt,
     prompt = promptBody,
     stream = false,
+    -- Keep the model resident in memory for longer than Ollama's default
+    -- (~5 min) so intermittent use during a work session doesn't keep
+    -- paying the full model-reload cost on every first hotkey press.
+    keep_alive = "30m",
     options = { temperature = 0.1 },
   })
 
@@ -339,6 +343,10 @@ local function adjustToneText(input, direction, callback)
     system = SYSTEM_PROMPT_TONE[direction],
     prompt = input,
     stream = false,
+    -- Keep the model resident in memory for longer than Ollama's default
+    -- (~5 min) so intermittent use during a work session doesn't keep
+    -- paying the full model-reload cost on every first hotkey press.
+    keep_alive = "30m",
     options = { temperature = 0.2 },
   })
 
@@ -374,6 +382,10 @@ local function summarizeText(input, callback)
     system = SYSTEM_PROMPT_SUMMARIZE,
     prompt = input,
     stream = false,
+    -- Keep the model resident in memory for longer than Ollama's default
+    -- (~5 min) so intermittent use during a work session doesn't keep
+    -- paying the full model-reload cost on every first hotkey press.
+    keep_alive = "30m",
     options = { temperature = 0.2 },
   })
 
@@ -397,13 +409,21 @@ end
 
 -- Runs a single Ollama /api/generate call and hands the trimmed text response
 -- to callback(result), or shows an alert and returns nothing on failure.
-local function ollamaGenerate(systemPrompt, promptBody, temperature, failureLabel, callback)
+local function ollamaGenerate(systemPrompt, promptBody, temperature, failureLabel, callback, numPredict)
   local payload = hs.json.encode({
     model = OLLAMA_MODEL,
     system = systemPrompt,
     prompt = promptBody,
     stream = false,
-    options = { temperature = temperature },
+    -- Keep the model resident in memory for longer than Ollama's default
+    -- (~5 min) so intermittent use during a work session doesn't keep
+    -- paying the full model-reload cost on every first hotkey press.
+    keep_alive = "30m",
+    -- num_predict caps how many tokens the model can generate. Both the
+    -- points list and the draft reply are meant to be short by design, so
+    -- this is a speed ceiling, not a behavior change — it only kicks in if
+    -- something would have run on far longer than intended anyway.
+    options = { temperature = temperature, num_predict = numPredict or 150 },
   })
 
   hs.http.asyncPost(OLLAMA_URL, payload, { ["Content-Type"] = "application/json" },
@@ -481,8 +501,8 @@ local function draftReplyText(incomingMessage, callback)
       -- point list to address.
       ollamaGenerate(systemPrompt, promptBody, 0.15, "Draft failed", function(result)
         callback(stripLeakedChecklist(result))
-      end)
-    end)
+      end, 120)
+    end, 100)
 end
 
 -- Copies the current selection and reads it back, retrying a few times since
@@ -536,8 +556,15 @@ local function pasteAndHighlight(newText, savedClipboard, doneLabel)
     if not ok or charCount == nil then
       charCount = #newText
     end
+    -- The cursor sits at the end of the pasted text right after ⌘V. Move it
+    -- back to the start first (no selection yet), then select forward with
+    -- shift+Right — the highlight grows left-to-right, which reads more
+    -- naturally than growing right-to-left from the end.
     for _ = 1, charCount do
-      hs.eventtap.keyStroke({"shift"}, "left", 0)
+      hs.eventtap.keyStroke({}, "left", 0)
+    end
+    for _ = 1, charCount do
+      hs.eventtap.keyStroke({"shift"}, "right", 0)
     end
     hs.alert.show(doneLabel, 1)
   end)
