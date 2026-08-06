@@ -24,18 +24,37 @@ if ! command -v brew >/dev/null 2>&1; then
 fi
 
 echo "-- Installing Ollama (runs the local AI model)"
-brew install ollama
-brew services start ollama
+# Homebrew itself can return a non-zero exit code for reasons unrelated to
+# whether the actual install worked (a cleanup hiccup, a caveat it treats as
+# a warning, etc). Rather than guess which specific case that is, check the
+# real-world outcome directly -- if the command now exists, it worked,
+# regardless of what brew's own exit code says.
+brew install ollama || true
+if ! command -v ollama >/dev/null 2>&1; then
+  echo "Error: ollama did not install. Try running 'brew install ollama' by itself to see the real error, then re-run this script."
+  exit 1
+fi
+brew services start ollama || true
 
 echo "-- Downloading the model (qwen2.5:7b-instruct, ~4.7GB, one-time)"
-ollama pull qwen2.5:7b-instruct
+if ! ollama pull qwen2.5:7b-instruct; then
+  echo "Error: the model download failed (check your internet connection), then re-run this script."
+  exit 1
+fi
 
 echo "-- Installing Hammerspoon (runs the hotkeys)"
-brew install --cask hammerspoon
+brew install --cask hammerspoon || true
+if [ ! -d "/Applications/Hammerspoon.app" ]; then
+  echo "Error: Hammerspoon did not install. Try running 'brew install --cask hammerspoon' by itself to see the real error, then re-run this script."
+  exit 1
+fi
 
 echo "-- Installing the SlackScribe config"
 mkdir -p ~/.hammerspoon
-curl -fsSL "$REPO_RAW_BASE/slackscribe.lua" -o ~/.hammerspoon/init.lua
+if ! curl -fsSL "$REPO_RAW_BASE/slackscribe.lua" -o ~/.hammerspoon/init.lua; then
+  echo "Error: couldn't download the config file (check your internet connection), then re-run this script."
+  exit 1
+fi
 
 echo "-- Adding Hammerspoon as a login item (so hotkeys are always ready)"
 osascript -e 'tell application "System Events" to make login item at end with properties {path:"/Applications/Hammerspoon.app", hidden:false}' >/dev/null 2>&1 || true
