@@ -287,7 +287,22 @@ local function setContext(text)
   end)
 end
 
-local function rephraseText(input, callback)
+-- Rare model glitch safety net: occasionally the model drops all the spaces
+-- from a run of words, producing something like "canparalleleditingget
+-- messy". No real English word gets anywhere close to this length, so an
+-- unbroken run this long is a reliable, false-positive-free signal that
+-- the response is corrupted -- worth one silent automatic retry rather
+-- than showing garbled text to the user.
+local function looksGarbled(text)
+  for word in text:gmatch("%a+") do
+    if #word >= 22 then
+      return true
+    end
+  end
+  return false
+end
+
+local function rephraseText(input, callback, isRetry)
   if input == nil or input:gsub("%s", "") == "" then
     hs.alert.show("Nothing selected to rephrase")
     return
@@ -314,7 +329,9 @@ local function rephraseText(input, callback)
     options = { temperature = 0.1 },
   })
 
-  hs.alert.show("Rephrasing...", 1)
+  if not isRetry then
+    hs.alert.show("Rephrasing...", 1)
+  end
 
   hs.http.asyncPost(OLLAMA_URL, payload, { ["Content-Type"] = "application/json" },
     function(status, body, headers)
@@ -328,11 +345,15 @@ local function rephraseText(input, callback)
         return
       end
       local result = decoded.response:gsub("^%s+", ""):gsub("%s+$", "")
+      if looksGarbled(result) and not isRetry then
+        rephraseText(input, callback, true)
+        return
+      end
       callback(result)
     end)
 end
 
-local function adjustToneText(input, direction, callback)
+local function adjustToneText(input, direction, callback, isRetry)
   if input == nil or input:gsub("%s", "") == "" then
     hs.alert.show("Select the text you want to adjust first")
     return
@@ -350,10 +371,12 @@ local function adjustToneText(input, direction, callback)
     options = { temperature = 0.2 },
   })
 
-  hs.alert.show(
-    direction == "casual" and "Making it more casual..." or "Making it more professional...",
-    1
-  )
+  if not isRetry then
+    hs.alert.show(
+      direction == "casual" and "Making it more casual..." or "Making it more professional...",
+      1
+    )
+  end
 
   hs.http.asyncPost(OLLAMA_URL, payload, { ["Content-Type"] = "application/json" },
     function(status, body, headers)
@@ -367,6 +390,10 @@ local function adjustToneText(input, direction, callback)
         return
       end
       local result = decoded.response:gsub("^%s+", ""):gsub("%s+$", "")
+      if looksGarbled(result) and not isRetry then
+        adjustToneText(input, direction, callback, true)
+        return
+      end
       callback(result)
     end)
 end
