@@ -398,7 +398,7 @@ local function adjustToneText(input, direction, callback, isRetry)
     end)
 end
 
-local function summarizeText(input, callback)
+local function summarizeText(input, callback, isRetry)
   if input == nil or input:gsub("%s", "") == "" then
     hs.alert.show("Nothing selected to summarize")
     return
@@ -416,7 +416,9 @@ local function summarizeText(input, callback)
     options = { temperature = 0.2 },
   })
 
-  hs.alert.show("Summarizing...", 1)
+  if not isRetry then
+    hs.alert.show("Summarizing...", 1)
+  end
 
   hs.http.asyncPost(OLLAMA_URL, payload, { ["Content-Type"] = "application/json" },
     function(status, body, headers)
@@ -430,13 +432,17 @@ local function summarizeText(input, callback)
         return
       end
       local result = decoded.response:gsub("^%s+", ""):gsub("%s+$", "")
+      if looksGarbled(result) and not isRetry then
+        summarizeText(input, callback, true)
+        return
+      end
       callback(result)
     end)
 end
 
 -- Runs a single Ollama /api/generate call and hands the trimmed text response
 -- to callback(result), or shows an alert and returns nothing on failure.
-local function ollamaGenerate(systemPrompt, promptBody, temperature, failureLabel, callback, numPredict)
+local function ollamaGenerate(systemPrompt, promptBody, temperature, failureLabel, callback, numPredict, isRetry)
   local payload = hs.json.encode({
     model = OLLAMA_MODEL,
     system = systemPrompt,
@@ -464,7 +470,12 @@ local function ollamaGenerate(systemPrompt, promptBody, temperature, failureLabe
         hs.alert.show(failureLabel .. ": bad response from Ollama")
         return
       end
-      callback(decoded.response:gsub("^%s+", ""):gsub("%s+$", ""))
+      local result = decoded.response:gsub("^%s+", ""):gsub("%s+$", "")
+      if looksGarbled(result) and not isRetry then
+        ollamaGenerate(systemPrompt, promptBody, temperature, failureLabel, callback, numPredict, true)
+        return
+      end
+      callback(result)
     end)
 end
 
