@@ -117,6 +117,13 @@ local SYSTEM_PROMPT_DRAFT =
   "'No worries, thanks for fitting it in after your call!' — identical " ..
   "except for those first two words.\n" ..
   "\n" ..
+  "SPEAKER CHECK — the incoming message is written entirely by the OTHER " ..
+  "PERSON, not you. Any 'I'/'my' statement inside the incoming message " ..
+  "describes something THEY did, decided, or think — never restate their " ..
+  "own stated action as if you did it yourself. Acknowledge it as theirs " ..
+  "('thanks for doing that', 'got it, appreciate you handling that') " ..
+  "rather than claiming it as your own action.\n" ..
+  "\n" ..
   "The DISTINCT POINTS list is for your own planning only — never copy, " ..
   "repeat, or include any part of that numbered list itself in your output. " ..
   "Do not add quotes around the text or any explanation of what you wrote. " ..
