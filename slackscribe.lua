@@ -263,6 +263,10 @@ local SYSTEM_PROMPT_SUMMARIZE =
   "made, any open questions, and any action items or next steps mentioned. " ..
   "Use a few short sentences or bullet points — whichever reads clearer for " ..
   "this content. " ..
+  "OPEN QUESTIONS CHECK — scan for every question mark in the messages; if a " ..
+  "question is never followed by an answer later in the same text, it is a " ..
+  "live open question and must be listed, even if it seems minor. Only omit a " ..
+  "question if the messages clearly answer it afterward. " ..
   "Do NOT add opinions, interpretations, or information that isn't actually " ..
   "in the messages. " ..
   "Do not add greetings, sign-offs, or any explanation of what you're doing. " ..
