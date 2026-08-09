@@ -62,6 +62,16 @@ if ! ollama pull qwen2.5:7b-instruct; then
   exit 1
 fi
 
+echo "-- Downloading the summarize model (qwen2.5:14b-instruct, ~9GB, one-time)"
+# Summarize (⌘⇧S) uses a bigger model than the other hotkeys -- it's slower
+# (~15-20s vs a few seconds) but noticeably more reliable on long/messy
+# threads, and ⌘⇧S already waits on a dialog rather than pasting in place,
+# so the extra time is far less noticeable there than it would be elsewhere.
+if ! ollama pull qwen2.5:14b-instruct; then
+  echo "Error: the summarize model download failed (check your internet connection), then re-run this script."
+  exit 1
+fi
+
 echo "-- Installing Hammerspoon (runs the hotkeys)"
 brew install --cask hammerspoon || true
 if [ ! -d "/Applications/Hammerspoon.app" ]; then

@@ -13,6 +13,15 @@ local SLACK_ONLY = true
 
 local OLLAMA_URL = "http://127.0.0.1:11434/api/generate"
 local OLLAMA_MODEL = "qwen2.5:7b-instruct"
+-- Summarize (⌘⇧S) specifically uses a bigger model. Testing showed the 7B
+-- model above reliably mixes up who owns an action item on long, messy,
+-- multi-topic threads (though it's fine on short/simple ones) -- the 14B
+-- model handles that correctly far more consistently. It's slower (~15-20s
+-- vs a few seconds) and adds a ~9GB download, but ⌘⇧S already blocks on a
+-- dialog while you read it, so the extra latency is far less noticeable
+-- than it would be on the paste-in-place hotkeys, which stay on the fast
+-- model above.
+local OLLAMA_MODEL_SUMMARIZE = "qwen2.5:14b-instruct"
 
 local SYSTEM_PROMPT =
   "You clean up rough, typo-ridden Slack messages. " ..
@@ -259,6 +268,9 @@ local SYSTEM_PROMPT_SUMMARIZE =
   "timestamps mixed in with the message content — use them to note who said " ..
   "what if it's relevant, but don't treat a name or timestamp itself as " ..
   "something that was said. " ..
+  "Refer to people by their name each time, or 'they/their' if a pronoun " ..
+  "reads more naturally — never guess someone's gender (he/she/his/her), " ..
+  "since nothing in the messages states it. " ..
   "Write a short, factual summary covering: the main point(s), any decisions " ..
   "made, any open questions, and any action items or next steps mentioned. " ..
   "Use a few short sentences or bullet points — whichever reads clearer for " ..
@@ -412,7 +424,7 @@ local function summarizeText(input, callback, isRetry)
   end
 
   local payload = hs.json.encode({
-    model = OLLAMA_MODEL,
+    model = OLLAMA_MODEL_SUMMARIZE,
     system = SYSTEM_PROMPT_SUMMARIZE,
     prompt = input,
     stream = false,
@@ -424,7 +436,11 @@ local function summarizeText(input, callback, isRetry)
   })
 
   if not isRetry then
-    hs.alert.show("Summarizing...", 1)
+    -- Shown longer than the other hotkeys' alerts since the bigger
+    -- summarize model can take 15-20s (more on the first call after Ollama
+    -- loads it into memory) -- a 1s flash would vanish long before the
+    -- result arrives and could look like the hotkey silently did nothing.
+    hs.alert.show("Summarizing... (may take up to ~20s)", 3)
   end
 
   hs.http.asyncPost(OLLAMA_URL, payload, { ["Content-Type"] = "application/json" },

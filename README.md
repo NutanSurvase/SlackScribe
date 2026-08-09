@@ -8,7 +8,7 @@ Runs entirely on your own Mac. No API key, no subscription, no internet call —
 
 - A Mac (tested on Apple Silicon)
 - [Homebrew](https://brew.sh)
-- ~5GB free disk space (for the local model)
+- ~14GB free disk space (for the two local models — see below)
 
 ## Quick install
 
@@ -32,11 +32,12 @@ brew install ollama
 brew services start ollama
 ```
 
-**2. Download the model**
+**2. Download the models**
 ```
 ollama pull qwen2.5:7b-instruct
+ollama pull qwen2.5:14b-instruct
 ```
-This is a one-time ~4.7GB download.
+One-time downloads, ~4.7GB and ~9GB. The smaller model handles rephrase/draft/tone (fast, a few seconds); the larger one handles `⌘⇧S` summarize specifically — it's slower (~15-20s) but noticeably more reliable on long, messy threads, and `⌘⇧S` already shows a dialog you wait on, so the extra time is less noticeable there.
 
 **3. Install Hammerspoon** (runs the hotkeys)
 ```
@@ -106,5 +107,5 @@ Works anywhere you can select text, including Slack Desktop:
 ## Notes
 
 - Everything runs on `localhost` — nothing you type is sent over the internet.
-- The model (`qwen2.5:7b-instruct`) can be swapped for a smaller/faster or larger/better one by changing `OLLAMA_MODEL` at the top of `init.lua`, as long as it's pulled via `ollama pull <model>` first.
+- Two models, each swappable independently at the top of `init.lua` (pull any replacement via `ollama pull <model>` first): `OLLAMA_MODEL` (`qwen2.5:7b-instruct`) handles rephrase/draft/tone, and `OLLAMA_MODEL_SUMMARIZE` (`qwen2.5:14b-instruct`) handles `⌘⇧S` specifically, since it needs to track who-said-what-to-whom more carefully on long threads.
 - By default the hotkeys only fire while Slack is the frontmost app — in any other app, the same keystroke passes through untouched (so a browser's own `⌘⇧R` refresh still works, for example). Flip `SLACK_ONLY` to `false` near the top of `init.lua` to make them global instead.
