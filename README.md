@@ -24,13 +24,23 @@ This runs every step below automatically, except granting the Accessibility
 permission — macOS requires that to be a manual click. Prefer to see what
 it's doing first? Follow the manual steps instead.
 
+While it runs, you may see 1-2 macOS permission popups — both expected, safe
+to approve, see step 1 and step 3 below for what they look like.
+
 ## Manual setup steps
+
+**0. Install Homebrew** (skip if you already have it — check with `brew --version`)
+```
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+```
+This asks for your Mac login password in Terminal (a normal `sudo` prompt, needed to install to system folders) — that's expected.
 
 **1. Install Ollama** (runs the local AI model)
 ```
 brew install ollama
 brew services start ollama
 ```
+The first time Ollama's background service starts, macOS may show a firewall-style popup like *"Do you want the application to accept incoming network connections?"* — click **Allow**. It only ever listens on your own Mac (`localhost`), never the internet.
 
 **2. Download the models**
 ```
@@ -43,11 +53,14 @@ One-time downloads, ~4.7GB and ~9GB. The smaller model handles rephrase/draft/to
 ```
 brew install --cask hammerspoon
 ```
+Since this is an app downloaded from the internet, macOS Gatekeeper may block the first launch with *"Hammerspoon can't be opened because it is from an unidentified developer"* or similar. If that happens: right-click Hammerspoon in **Applications** → **Open** → confirm **Open** — only needed once.
 
 **4. Grant Accessibility permission**
 The first time Hammerspoon launches, it typically opens its own **Preferences** window showing "WARNING! Accessibility is not enabled!" with an **Enable Accessibility** button — click that (it's the quickest path). Alternatively, go to **System Settings → Privacy & Security → Accessibility** and turn on Hammerspoon there directly. Either way, this only lets it simulate copy/paste on your behalf — that's all it's used for.
 
 You'll also see a one-time system notification like *"Login Item Added — Hammerspoon will open automatically when you log in"* — that's expected, not an error.
+
+If hotkeys still don't respond after enabling Accessibility, also check **System Settings → Privacy & Security → Input Monitoring** and enable Hammerspoon there — a few Macs/macOS versions need both permissions before hotkeys register.
 
 **5. Get the config file and add it**
 ```
@@ -55,6 +68,7 @@ git clone https://github.com/NutanSurvase/SlackScribe.git
 mkdir -p ~/.hammerspoon
 cp SlackScribe/slackscribe.lua ~/.hammerspoon/init.lua
 ```
+If this is the first `git` command ever run on this Mac, macOS may prompt to install **Command Line Developer Tools** first — accept, wait for that to finish, then re-run the command above.
 
 **6. Load it**
 Click the Hammerspoon icon in your menu bar → **Reload Config**. You should see a confirmation popup listing the hotkeys.
