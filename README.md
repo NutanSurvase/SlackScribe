@@ -26,6 +26,10 @@ curl -fsSL https://raw.githubusercontent.com/NutanSurvase/SlackScribe/main/insta
 `bash`, since some of the install steps can otherwise interfere with the
 same connection the script is being read from mid-run.)
 
+**Expect ~30-45 minutes total** — most of that is downloading the two AI
+models (~14GB combined), so it depends heavily on your internet speed. It
+prints progress as it goes, so it's not stuck even if it looks slow.
+
 This runs every step below automatically, except granting the Accessibility
 permission — macOS requires that to be a manual click. Prefer to see what
 it's doing first? Follow the manual steps instead.
