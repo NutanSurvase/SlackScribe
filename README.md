@@ -4,6 +4,8 @@ Rephrase and draft your Slack replies in place, without ever leaving Slack or op
 
 Runs entirely on your own Mac. No API key, no subscription, no internet call — a local AI model does the rewriting, and a small automation tool does the copy/paste/hotkey work.
 
+**One-time setup** — install it once, then the hotkeys just work from then on (auto-starts at login).
+
 ## What it needs
 
 - A Mac (tested on Apple Silicon)
