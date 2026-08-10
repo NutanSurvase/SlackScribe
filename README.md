@@ -12,6 +12,12 @@ Runs entirely on your own Mac. No API key, no subscription, no internet call —
 
 ## Quick install
 
+Needs Homebrew first — skip this if you already have it (check with `brew --version`):
+```
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+```
+
+Then run the installer:
 ```
 curl -fsSL https://raw.githubusercontent.com/NutanSurvase/SlackScribe/main/install.sh -o /tmp/slackscribe-install.sh && bash /tmp/slackscribe-install.sh
 ```
