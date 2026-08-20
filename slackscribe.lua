@@ -345,7 +345,12 @@ local function rephraseText(input, callback, isRetry)
     -- (~5 min) so intermittent use during a work session doesn't keep
     -- paying the full model-reload cost on every first hotkey press.
     keep_alive = "30m",
-    options = { temperature = 0.1 },
+    -- num_ctx: without this, Ollama defaults to a small context window
+    -- (observed 4096 tokens). If the captured context + input together
+    -- exceed it, there's no room left for the model to generate any
+    -- output at all -- it returns an empty response instantly rather than
+    -- an error, which otherwise looks exactly like a silent failure.
+    options = { temperature = 0.1, num_ctx = 8192 },
   })
 
   if not isRetry then
@@ -364,6 +369,10 @@ local function rephraseText(input, callback, isRetry)
         return
       end
       local result = decoded.response:gsub("^%s+", ""):gsub("%s+$", "")
+      if result == "" then
+        hs.alert.show("Rephrase failed: got an empty response, try again")
+        return
+      end
       if looksGarbled(result) and not isRetry then
         rephraseText(input, callback, true)
         return
@@ -387,7 +396,9 @@ local function adjustToneText(input, direction, callback, isRetry)
     -- (~5 min) so intermittent use during a work session doesn't keep
     -- paying the full model-reload cost on every first hotkey press.
     keep_alive = "30m",
-    options = { temperature = 0.2 },
+    -- See the matching comment in rephraseText -- without num_ctx, a long
+    -- selection can silently return an empty response instead of an error.
+    options = { temperature = 0.2, num_ctx = 8192 },
   })
 
   if not isRetry then
@@ -409,6 +420,10 @@ local function adjustToneText(input, direction, callback, isRetry)
         return
       end
       local result = decoded.response:gsub("^%s+", ""):gsub("%s+$", "")
+      if result == "" then
+        hs.alert.show("Tone adjust failed: got an empty response, try again")
+        return
+      end
       if looksGarbled(result) and not isRetry then
         adjustToneText(input, direction, callback, true)
         return
@@ -432,7 +447,12 @@ local function summarizeText(input, callback, isRetry)
     -- (~5 min) so intermittent use during a work session doesn't keep
     -- paying the full model-reload cost on every first hotkey press.
     keep_alive = "30m",
-    options = { temperature = 0.2 },
+    -- num_ctx: without this, Ollama defaults to a small context window
+    -- (observed 4096 tokens) -- confirmed via direct testing that a long
+    -- thread then leaves no room for the model to generate any output at
+    -- all, returning an empty response instantly instead of an error. This
+    -- was the root cause of ⌘⇧S failing on every real (long) thread.
+    options = { temperature = 0.2, num_ctx = 8192 },
   })
 
   if not isRetry then
@@ -455,6 +475,10 @@ local function summarizeText(input, callback, isRetry)
         return
       end
       local result = decoded.response:gsub("^%s+", ""):gsub("%s+$", "")
+      if result == "" then
+        hs.alert.show("Summarize failed: got an empty response, try again")
+        return
+      end
       if looksGarbled(result) and not isRetry then
         summarizeText(input, callback, true)
         return
@@ -479,7 +503,11 @@ local function ollamaGenerate(systemPrompt, promptBody, temperature, failureLabe
     -- points list and the draft reply are meant to be short by design, so
     -- this is a speed ceiling, not a behavior change — it only kicks in if
     -- something would have run on far longer than intended anyway.
-    options = { temperature = temperature, num_predict = numPredict or 150 },
+    -- num_ctx: without this, Ollama defaults to a small context window
+    -- (observed 4096 tokens). A long captured context (⌘⇧G on a big thread)
+    -- plus the incoming message can exceed that, leaving no room to
+    -- generate output -- an empty response instantly instead of an error.
+    options = { temperature = temperature, num_predict = numPredict or 150, num_ctx = 8192 },
   })
 
   hs.http.asyncPost(OLLAMA_URL, payload, { ["Content-Type"] = "application/json" },
@@ -494,6 +522,10 @@ local function ollamaGenerate(systemPrompt, promptBody, temperature, failureLabe
         return
       end
       local result = decoded.response:gsub("^%s+", ""):gsub("%s+$", "")
+      if result == "" then
+        hs.alert.show(failureLabel .. ": got an empty response, try again")
+        return
+      end
       if looksGarbled(result) and not isRetry then
         ollamaGenerate(systemPrompt, promptBody, temperature, failureLabel, callback, numPredict, true)
         return
