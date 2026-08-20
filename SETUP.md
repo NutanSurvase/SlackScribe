@@ -111,3 +111,11 @@ Add Hammerspoon as a login item: **System Settings → General → Login Items �
 
 **A hotkey consistently fails to capture even with text clearly selected:**
 - Another app may have claimed the same global shortcut (screenshot/recording tools are common culprits). Check for a conflicting hotkey in that app, or rebind the one in `init.lua` to a different combo.
+
+**A hotkey (especially switching between `⌘⇧S` and the others) suddenly stops working, shows a blank result, or an "Is Ollama running?" alert even though Ollama is running:**
+- On a Mac with less RAM, Ollama can run out of GPU memory trying to keep both of SlackScribe's models loaded at once, which crashes mid-request. Fresh installs are already protected against this, but if you installed before this fix, run this once in Terminal, then quit and reopen Hammerspoon:
+  ```
+  /usr/libexec/PlistBuddy -c "Add :EnvironmentVariables:OLLAMA_MAX_LOADED_MODELS string 1" ~/Library/LaunchAgents/homebrew.mxcl.ollama.plist
+  brew services restart ollama
+  ```
+  (If that first command says the key already exists, you already have this fix — the issue is something else.)

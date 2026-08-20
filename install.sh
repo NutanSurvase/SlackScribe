@@ -36,6 +36,26 @@ if ! command -v ollama >/dev/null 2>&1; then
 fi
 brew services start ollama || true
 
+# SlackScribe uses two models (a small one and a large one). On a Mac with
+# limited RAM, letting Ollama keep both loaded in memory at once (its
+# default behavior) can exhaust available GPU memory and crash mid-request
+# -- confirmed directly via a real "Insufficient Memory" GPU error in
+# Ollama's own log on a 16GB Mac. Restricting Ollama to one loaded model at
+# a time avoids that entirely (switching hotkey types just costs a brief
+# reload instead). Non-fatal if this can't be applied -- it's a safety
+# margin, not a hard requirement.
+echo "-- Limiting Ollama to one loaded model at a time (avoids memory crashes on Macs with less RAM)"
+OLLAMA_PLIST=~/Library/LaunchAgents/homebrew.mxcl.ollama.plist
+if [ -f "$OLLAMA_PLIST" ]; then
+  if ! /usr/libexec/PlistBuddy -c "Print :EnvironmentVariables" "$OLLAMA_PLIST" >/dev/null 2>&1; then
+    /usr/libexec/PlistBuddy -c "Add :EnvironmentVariables dict" "$OLLAMA_PLIST" >/dev/null 2>&1 || true
+  fi
+  if ! /usr/libexec/PlistBuddy -c "Print :EnvironmentVariables:OLLAMA_MAX_LOADED_MODELS" "$OLLAMA_PLIST" >/dev/null 2>&1; then
+    /usr/libexec/PlistBuddy -c "Add :EnvironmentVariables:OLLAMA_MAX_LOADED_MODELS string 1" "$OLLAMA_PLIST" >/dev/null 2>&1 || true
+  fi
+  brew services restart ollama || true
+fi
+
 # `brew services start` hands off to launchd and returns immediately -- the
 # actual ollama server process needs a moment to start listening. On a truly
 # fresh install (service started for the first time), pulling the model
